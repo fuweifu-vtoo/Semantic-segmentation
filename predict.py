@@ -18,8 +18,8 @@ class Transformer(object):
 
     def __call__(self, img_):
         img_ = img_.resize(self.size, self.interpolation)
-        img_ = self.toTensor(img_)
-        img_.sub_(0.5).div_(0.5)
+        img_ = self.toTensor(img_)   ##这部分好像会把（0,255）转到（0,1）
+        img_.sub_(0.5).div_(0.5)   ##这部分将范围从（0,1）变成（-1,1），和模型自身的输入要匹配
         return img_
 
 

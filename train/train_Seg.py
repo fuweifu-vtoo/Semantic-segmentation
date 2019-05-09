@@ -8,14 +8,17 @@ import torch.backends.cudnn as cudnn
 import torchvision.utils as vutils
 from torch.autograd import Variable
 import time
+import numpy as np
+from numpy import *
 
 from data_loader.dataset import train_dataset
 from models.u_net import UNet
 from models.seg_net import Segnet
 import MIoU
+from tensorboardX import SummaryWriter
 
 parser = argparse.ArgumentParser(description='Training a Segnet model')
-parser.add_argument('--batch_size', type=int, default=16, help='equivalent to instance normalization with batch_size=1')
+parser.add_argument('--batch_size', type=int, default=1, help='equivalent to instance normalization with batch_size=1')
 parser.add_argument('--input_nc', type=int, default=3)
 parser.add_argument('--output_nc', type=int, default=3)
 parser.add_argument('--niter', type=int, default=200, help='number of epochs to train for')
@@ -35,7 +38,7 @@ parser.add_argument('--test_step', default=300, help='path to val images')
 parser.add_argument('--log_step', default=1, help='path to val images')
 parser.add_argument('--num_GPU', default=2, help='number of GPU')
 opt = parser.parse_args()
-opt.cuda = True
+opt.cuda = False
 opt.data_path = '../data/train'
 opt.outf = '../checkpoint/training_results_segnet'
 print(opt)
@@ -78,6 +81,7 @@ def weights_init(m):
 
 
 net = Segnet(opt.input_nc, opt.output_nc)
+writer = SummaryWriter()
 
 if opt.net != '':
     net.load_state_dict(torch.load(opt.netG))
@@ -86,7 +90,7 @@ else:
 if opt.cuda:
     net.cuda()
 if opt.num_GPU > 1:
-    net=nn.DaraParallel(net)
+    net=nn.DataParallel(net)
 
 # print(net)
 
@@ -109,6 +113,7 @@ if __name__ == '__main__':
     log = open('log.txt', 'w')
     start = time.time()
     net.train()
+    writer.add_graph(net,(initial_image,))
     for epoch in range(1, opt.niter+1):
         loader = iter(train_loader)
         for i in range(0, train_datatset_.__len__(), opt.batch_size):
@@ -122,28 +127,38 @@ if __name__ == '__main__':
             initial_image = initial_image.view(-1)     #拉伸成为一维tensor
             semantic_image_pred = semantic_image_pred.view(-1)
 
+            ###calc MIOU####因为中间进行过归一化，所以不能直接用minimum(truth,1)和astype(int)
+            hist = np.zeros((2,2))
+            truth = semantic_image.data.numpy()
+            pred = semantic_image_pred.data.numpy()
+            truth = (truth+1)/2*255
+            pred = (pred+1)/2*255
+            truth = np.minimum(truth,1).astype(int)
+            pred = np.minimum(pred,1).astype(int)
+            truth = np.maximum(truth,0).astype(int)
+            pred = np.maximum(pred,0).astype(int)
+            IoUs,temp_IoU = MIoU.compute_per_iou(truth,pred,2,hist)
+
+            ### loss ###
             loss = criterion(semantic_image_pred, semantic_image)
             optimizer.zero_grad()
             loss.backward()
             optimizer.step()
-            ###calc MIOU##
-            hist = np.zeros((2,2))
-            truth = semantic_image.data.numpy()
-            pred = semantic_image_pred.data.numpy()
-            truth = np.minimum(truth,1)
-            pred = np.minimum(pred,1)
-            MIoUs,MIou = MIoU.compute_per_iou(truth,pred,2,hist)
-            ### MIOU ###
+
 
             ########### Logging ##########
             if i % opt.log_step == 0:
                 print('[%d/%d][%d/%d] Loss: %.4f' %
                       (epoch, opt.niter, i, len(train_loader) * opt.batch_size, loss.item()))
-                print("MIOU is : %.4f" % MIoUs[1])
+                print("MIOU is : %.4f" % IoUs[1])
                 log.write('[%d/%d][%d/%d] Loss: %.4f' %
                           (epoch, opt.niter, i, len(train_loader) * opt.batch_size, loss.item()))
             if i % opt.test_step == 0:
-               vutils.save_image(semantic_image_pred.data.reshape(-1,3,256,256), opt.outf + '/fake_samples_epoch_%03d_%03d.png' % (epoch, i),normalize=True)
+               vutils.save_image(semantic_image_pred.data.reshape(-1,3,256,256), opt.outf + '/fake_samples_epoch_%03d_%03d.png' % (epoch, i),normalize=True) #normalize=True很关键，因为semantic_image_pred的范围是-1，1
+
+            writer.add_scalar('data/loss', loss.item(), (epoch-1)*len(train_loader)+i)
+            writer.add_scalar('data/IoUs', IoUs[1], (epoch-1)*len(train_loader)+i)
+            writer.close()
 
         # if epoch % opt.val_epoch == 0:
         #     loader_synth = iter(val_loader_synth)

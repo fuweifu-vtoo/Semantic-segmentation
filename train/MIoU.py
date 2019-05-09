@@ -14,11 +14,11 @@ def compute_per_iou(pred, label, cls_nums, hist):
     mIoU = np.nanmean(mIoUs)
     return mIoUs, mIoU
 
-if __name__ == "__main__":
-    hist = np.zeros((2,2))
-    a = np.array([[[10,10],[10,10]],[[1,1],[0,0]],[[0,0],[0,0]]],dtype=np.int32)
-    b = np.array([[[1,10],[11,0]],[[10,1],[0,0]],[[0,0],[1,1]]],dtype=np.int32)
-    a = np.minimum(a,1)
-    b = np.minimum(b,1)
-    print(a.flatten(),b.flatten())
-    print(compute_per_iou(a,b,2,hist)[0][1])
+# if __name__ == "__main__":
+#     hist = np.zeros((2,2))
+#     a = np.array([[[10,10],[10,10]],[[1,1],[0,0]],[[0,0],[0,0]]],dtype=np.int32)
+#     b = np.array([[[1,10],[11,0]],[[10,1],[0,0]],[[0,0],[1,1]]],dtype=np.int32)
+#     a = np.minimum(a,1)
+#     b = np.minimum(b,1)
+#     print(a.flatten(),b.flatten())
+#     print(compute_per_iou(a,b,2,hist)[0][1])

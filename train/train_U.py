@@ -136,6 +136,8 @@ if __name__ == '__main__':
             if i % opt.test_step == 0:
                vutils.save_image(semantic_image_pred.data.reshape(-1,3,256,256), opt.outf + '/fake_samples_epoch_%03d_%03d.png' % (epoch, i),normalize=True)
 
+            
+
         # if epoch % opt.val_epoch == 0:
         #     loader_synth = iter(val_loader_synth)
         #     loader_real = iter(val_loader_real)
