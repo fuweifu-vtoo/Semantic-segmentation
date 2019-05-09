@@ -12,6 +12,7 @@ import time
 from data_loader.dataset import train_dataset
 from models.u_net import UNet
 from models.seg_net import Segnet
+import MIoU
 
 parser = argparse.ArgumentParser(description='Training a UNet model')
 parser.add_argument('--batch_size', type=int, default=16, help='equivalent to instance normalization with batch_size=1')
@@ -30,7 +31,7 @@ parser.add_argument('--net', type=str, default='', help='path to pre-trained net
 parser.add_argument('--data_path', default='', help='path to training images')
 parser.add_argument('--outf', default='', help='folder to output images and model checkpoints')
 parser.add_argument('--save_epoch', default=5, help='path to val images')
-parser.add_argument('--test_step', default=1280, help='path to val images')
+parser.add_argument('--test_step', default=300, help='path to val images')
 parser.add_argument('--log_step', default=1, help='path to val images')
 parser.add_argument('--num_GPU', default=2, help='number of GPU')
 opt = parser.parse_args()

@@ -12,6 +12,7 @@ import time
 from data_loader.dataset import train_dataset
 from models.u_net import UNet
 from models.seg_net import Segnet
+import MIoU
 
 parser = argparse.ArgumentParser(description='Training a Segnet model')
 parser.add_argument('--batch_size', type=int, default=16, help='equivalent to instance normalization with batch_size=1')
@@ -30,7 +31,7 @@ parser.add_argument('--net', type=str, default='', help='path to pre-trained net
 parser.add_argument('--data_path', default='', help='path to training images')
 parser.add_argument('--outf', default='', help='folder to output images and model checkpoints')
 parser.add_argument('--save_epoch', default=5, help='path to val images')
-parser.add_argument('--test_step', default=1280, help='path to val images')
+parser.add_argument('--test_step', default=300, help='path to val images')
 parser.add_argument('--log_step', default=1, help='path to val images')
 parser.add_argument('--num_GPU', default=2, help='number of GPU')
 opt = parser.parse_args()
@@ -125,11 +126,20 @@ if __name__ == '__main__':
             optimizer.zero_grad()
             loss.backward()
             optimizer.step()
+            ###calc MIOU##
+            hist = np.zeros((2,2))
+            truth = semantic_image.data.numpy()
+            pred = semantic_image_pred.data.numpy()
+            truth = np.minimum(truth,1)
+            pred = np.minimum(pred,1)
+            MIoUs,MIou = MIoU.compute_per_iou(truth,pred,2,hist)
+            ### MIOU ###
 
             ########### Logging ##########
             if i % opt.log_step == 0:
                 print('[%d/%d][%d/%d] Loss: %.4f' %
                       (epoch, opt.niter, i, len(train_loader) * opt.batch_size, loss.item()))
+                print("MIOU is : %.4f" % MIoUs[1])
                 log.write('[%d/%d][%d/%d] Loss: %.4f' %
                           (epoch, opt.niter, i, len(train_loader) * opt.batch_size, loss.item()))
             if i % opt.test_step == 0:
