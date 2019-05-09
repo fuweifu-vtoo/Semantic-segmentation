@@ -18,7 +18,7 @@ import MIoU
 from tensorboardX import SummaryWriter
 
 parser = argparse.ArgumentParser(description='Training a Segnet model')
-parser.add_argument('--batch_size', type=int, default=1, help='equivalent to instance normalization with batch_size=1')
+parser.add_argument('--batch_size', type=int, default=16, help='equivalent to instance normalization with batch_size=1')
 parser.add_argument('--input_nc', type=int, default=3)
 parser.add_argument('--output_nc', type=int, default=3)
 parser.add_argument('--niter', type=int, default=200, help='number of epochs to train for')
@@ -36,11 +36,11 @@ parser.add_argument('--outf', default='', help='folder to output images and mode
 parser.add_argument('--save_epoch', default=5, help='path to val images')
 parser.add_argument('--test_step', default=300, help='path to val images')
 parser.add_argument('--log_step', default=1, help='path to val images')
-parser.add_argument('--num_GPU', default=2, help='number of GPU')
+parser.add_argument('--num_GPU', default=1, help='number of GPU')
 opt = parser.parse_args()
-opt.cuda = False
-opt.data_path = '../data/train'
-opt.outf = '../checkpoint/training_results_segnet'
+opt.cuda = True
+opt.data_path = './data/train'
+opt.outf = './checkpoint/training_results_segnet'
 print(opt)
 
 try:
@@ -59,6 +59,7 @@ print("Random Seed: ", opt.manual_seed)
 random.seed(opt.manual_seed)
 torch.manual_seed(opt.manual_seed)
 if opt.cuda:
+    os.environ['CUDA_VISIBLE_DEVICES'] = '1'    #Setting this GPU visible
     torch.cuda.manual_seed_all(opt.manual_seed)
 
 cudnn.benchmark = True
@@ -81,7 +82,7 @@ def weights_init(m):
 
 
 net = Segnet(opt.input_nc, opt.output_nc)
-writer = SummaryWriter()
+writer = SummaryWriter(log_dir='Segnet_run')
 
 if opt.net != '':
     net.load_state_dict(torch.load(opt.netG))
