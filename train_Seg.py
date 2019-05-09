@@ -14,11 +14,11 @@ from numpy import *
 from data_loader.dataset import train_dataset
 from models.u_net import UNet
 from models.seg_net import Segnet
-import MIoU
+import train.MIoU as MIoU
 from tensorboardX import SummaryWriter
 
 parser = argparse.ArgumentParser(description='Training a Segnet model')
-parser.add_argument('--batch_size', type=int, default=16, help='equivalent to instance normalization with batch_size=1')
+parser.add_argument('--batch_size', type=int, default=1, help='equivalent to instance normalization with batch_size=1')
 parser.add_argument('--input_nc', type=int, default=3)
 parser.add_argument('--output_nc', type=int, default=3)
 parser.add_argument('--niter', type=int, default=200, help='number of epochs to train for')
@@ -38,7 +38,7 @@ parser.add_argument('--test_step', default=300, help='path to val images')
 parser.add_argument('--log_step', default=1, help='path to val images')
 parser.add_argument('--num_GPU', default=1, help='number of GPU')
 opt = parser.parse_args()
-opt.cuda = True
+opt.cuda = False
 opt.data_path = './data/train'
 opt.outf = './checkpoint/training_results_segnet'
 print(opt)
@@ -82,7 +82,7 @@ def weights_init(m):
 
 
 net = Segnet(opt.input_nc, opt.output_nc)
-writer = SummaryWriter(log_dir='Segnet_run')
+writer = SummaryWriter(log_dir='train/Segnet_run')
 
 if opt.net != '':
     net.load_state_dict(torch.load(opt.netG))
@@ -111,10 +111,10 @@ if opt.cuda:
 
 if __name__ == '__main__':
     ########### Training   ###########
-    log = open('log.txt', 'w')
+    log = open('train/log.txt', 'w')
     start = time.time()
     net.train()
-    writer.add_graph(net,(initial_image,))
+    # writer.add_graph(net,(initial_image,))
     for epoch in range(1, opt.niter+1):
         loader = iter(train_loader)
         for i in range(0, train_datatset_.__len__(), opt.batch_size):
@@ -157,8 +157,8 @@ if __name__ == '__main__':
             if i % opt.test_step == 0:
                vutils.save_image(semantic_image_pred.data.reshape(-1,3,256,256), opt.outf + '/fake_samples_epoch_%03d_%03d.png' % (epoch, i),normalize=True) #normalize=True很关键，因为semantic_image_pred的范围是-1，1
 
-            writer.add_scalar('data/loss', loss.item(), (epoch-1)*len(train_loader)+i)
-            writer.add_scalar('data/IoUs', IoUs[1], (epoch-1)*len(train_loader)+i)
+            # writer.add_scalar('data/loss', loss.item(), (epoch-1)*len(train_loader)+i)
+            # writer.add_scalar('data/IoUs', IoUs[1], (epoch-1)*len(train_loader)+i)
             writer.close()
 
         # if epoch % opt.val_epoch == 0:
