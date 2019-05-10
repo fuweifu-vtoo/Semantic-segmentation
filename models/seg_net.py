@@ -124,9 +124,9 @@ class Segnet(nn.Module):
 
         # Stage 1d
         x1d = F.max_unpool2d(x21d, id1, kernel_size=2, stride=2)
-        x12d = F.relu(self.bn12d(self.conv12d(x1d)), inplace=True)
-        x11d = self.conv11d(x12d)
-        output = t.sigmoid(x11d)
+        x12d = F.relu(self.bn12d(self.conv12d(x1d)), inplace=True)    ##需要激活函数吗？
+        x11d = self.conv11d(x12d)                             ##是不是少了bn层？
+        output = t.sigmoid(x11d)      ##sigmoid和softmax和全连接的区别？  #本来这应该是是一个像素分类层？
 
         return output
 
@@ -136,3 +136,9 @@ class Segnet(nn.Module):
     #     # for name in th:
     #     # s_dict[corresp_name[name]] = th[name]
     #     self.load_state_dict(th)
+
+# if __name__ == '__main__':
+#     net = Segnet(3,3)
+#     print(net)
+#     for name,parameters in net.named_parameters():
+#         print(name,':',parameters.size())

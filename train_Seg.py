@@ -130,8 +130,8 @@ if __name__ == '__main__':
 
             ###calc MIOU####因为中间进行过归一化，所以不能直接用minimum(truth,1)和astype(int)
             hist = np.zeros((2,2))
-            truth = semantic_image.data.numpy()
-            pred = semantic_image_pred.data.numpy()
+            truth = semantic_image.data.cpu().numpy()
+            pred = semantic_image_pred.data.cpu().numpy()
             truth = (truth+1)/2*255
             pred = (pred+1)/2*255
             truth = np.minimum(truth,1).astype(int)
