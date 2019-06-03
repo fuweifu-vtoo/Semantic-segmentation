@@ -1,3 +1,4 @@
+#coding:utf8
 from __future__ import print_function
 import os
 import torch
@@ -9,6 +10,7 @@ import numpy as np
 # from models.u_net import UNet
 from models.seg_net import Segnet
 import torchvision.transforms as transforms
+from torchvision.transforms import ToPILImage
 
 class Transformer(object):
     def __init__(self, size, interpolation=Image.BILINEAR):
@@ -18,8 +20,8 @@ class Transformer(object):
 
     def __call__(self, img_):
         img_ = img_.resize(self.size, self.interpolation)
-        img_ = self.toTensor(img_)   ##Õâ²¿·ÖºÃÏñ»á°Ñ£¨0,255£©×ªµ½£¨0,1£©
-        img_.sub_(0.5).div_(0.5)   ##Õâ²¿·Ö½«·¶Î§´Ó£¨0,1£©±ä³É£¨-1,1£©£¬ºÍÄ£ĞÍ×ÔÉíµÄÊäÈëÒªÆ¥Åä
+        img_ = self.toTensor(img_)  
+        img_.sub_(0.5).div_(0.5)   
         return img_
 
 
@@ -36,7 +38,13 @@ img = transformer(test_image)
 img = img.unsqueeze(0)
 img = Variable(img)
 label_image = model(img)
+label_image = label_image.squeeze(0)
+show = ToPILImage()
+a = show((label_image +1) /2)   ##è½¬æ¢çš„æ—¶å€™ï¼Œä¼šè‡ªåŠ¨ä»0-1è½¬æ¢æˆ0-256ï¼Œæ‰€ä»¥0.5ä¼šå˜æˆ127
+print(a.getpixel((100,100)))
+print(a.size)
+a.show()
 
 
-label_image_save_path = './data/train/label'
-vutils.save_image(label_image.data.reshape(-1,3,256,256), label_image_save_path + '/0_label_image.png',normalize=True)
+# label_image_save_path = './data/train/label'
+# vutils.save_image(label_image.data.reshape(-1,3,256,256), label_image_save_path + '/0_label_image.png',normalize=True)

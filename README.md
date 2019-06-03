@@ -1,11 +1,12 @@
 # Semantic-segmentation
+
+### [这个repo适合新手入门pytorch和图像分割]()
 一个采用**Pytorch**的语义分割项目
 
+这个repo是在遥感图像语义分割项目时写的，但数据集真正遥感项目的数据集，而是随便download的一个数据集，且还在初期。  repo会持续更新...
 
-这个repo是在完成教研室的遥感图像语义分割项目时写的，因为数据集不是遥感项目的数据集，而是随便download的一个数据集，且还在项目初期，基本在于搭建，所以不涉及教研室资料泄密问题。
-
-![数据集示意图](asset/0_src.png)
-![数据集示意图](asset/0.png)
+![](asset/0_src.png)
+![](asset/0.png)
 
 ## 我的环境
 
@@ -32,7 +33,7 @@ python train_U.py
 ```
 python predict.py
 ```  
-- 进行推断inference
+- 进行推断inference（需要有已经训练好的模型才可以推断）
 
 ## 包含文件
 
@@ -81,7 +82,7 @@ python predict.py
 
 
 ### 数据集处理
-进入vutils文件夹，使用下面语句（相对路劲要提前配置好） 
+进入vutils文件夹，使用下面语句（相对路径要提前配置好） 
 
 
 ```
@@ -92,7 +93,7 @@ python DataArgument.py
 **DataArgument.py**实现了对大图进行切割（成256 x 256），切割后旋转，加噪声等操作来生成训练数据。
 
 
-### [这个repo适合新手入门pytorch和图像分割]()
+
 
 
 
