@@ -7,7 +7,7 @@ import torchvision.utils as vutils
 from torch.autograd import Variable
 from PIL import Image
 import numpy as np
-# from models.u_net import UNet
+from models.u_net import UNet
 from models.seg_net import Segnet
 import torchvision.transforms as transforms
 from torchvision.transforms import ToPILImage
@@ -25,12 +25,15 @@ class Transformer(object):
         return img_
 
 
-model = Segnet(3,3)
-model_path = './checkpoint/training_results_segnet/model/netG_final.pth'
+#model = Segnet(3,3)
+#model_path = './checkpoint/training_results_segnet/model/netG_final.pth'
+model = UNet(3,3)
+model_path = './checkpoint/training_road_unet/model/netG_final.pth'
 model.load_state_dict(torch.load(model_path,map_location='cpu'))
 
 
-test_image_path = './data/train/src/0.png'
+#test_image_path = './data/train/src/0.png'
+test_image_path = 'C:/Users/1/Desktop/11.png'
 test_image = Image.open(test_image_path).convert('RGB')
 print('Operating...')
 transformer = Transformer((256, 256))

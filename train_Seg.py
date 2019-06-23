@@ -15,10 +15,9 @@ from data_loader.dataset import train_dataset
 from models.u_net import UNet
 from models.seg_net import Segnet
 import train.MIoU as MIoU
-from tensorboardX import SummaryWriter
 
 parser = argparse.ArgumentParser(description='Training a Segnet model')
-parser.add_argument('--batch_size', type=int, default=16, help='equivalent to instance normalization with batch_size=1')
+parser.add_argument('--batch_size', type=int, default=8, help='equivalent to instance normalization with batch_size=1')
 parser.add_argument('--input_nc', type=int, default=3)
 parser.add_argument('--output_nc', type=int, default=3)
 parser.add_argument('--niter', type=int, default=200, help='number of epochs to train for')
@@ -58,9 +57,9 @@ if opt.manual_seed is None:
 print("Random Seed: ", opt.manual_seed)
 random.seed(opt.manual_seed)
 torch.manual_seed(opt.manual_seed)
-if opt.cuda:
-    os.environ['CUDA_VISIBLE_DEVICES'] = '1'    #Setting this GPU visible
-    torch.cuda.manual_seed_all(opt.manual_seed)
+# if opt.cuda:
+#     os.environ['CUDA_VISIBLE_DEVICES'] = '0'    #Setting this GPU visible
+#     torch.cuda.manual_seed_all(opt.manual_seed)
 
 cudnn.benchmark = True
 
@@ -82,7 +81,6 @@ def weights_init(m):
 
 
 net = Segnet(opt.input_nc, opt.output_nc)
-writer = SummaryWriter(log_dir='train/Segnet_run')
 
 if opt.net != '':
     net.load_state_dict(torch.load(opt.netG))
@@ -120,8 +118,8 @@ if __name__ == '__main__':
         for i in range(0, train_datatset_.__len__(), opt.batch_size):
             initial_image_, semantic_image_, name = loader.next()
 
-            initial_image.data.resize_(initial_image_.size()).copy_(initial_image_)
-            semantic_image.data.resize_(semantic_image_.size()).copy_(semantic_image_)
+            initial_image.resize_(initial_image_.size()).copy_(initial_image_)
+            semantic_image.resize_(semantic_image_.size()).copy_(semantic_image_)
 
             semantic_image_pred = net(initial_image)
 
@@ -159,7 +157,6 @@ if __name__ == '__main__':
 
             # writer.add_scalar('data/loss', loss.item(), (epoch-1)*len(train_loader)+i)
             # writer.add_scalar('data/IoUs', IoUs[1], (epoch-1)*len(train_loader)+i)
-            writer.close()
 
         # if epoch % opt.val_epoch == 0:
         #     loader_synth = iter(val_loader_synth)
