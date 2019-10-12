@@ -1,4 +1,3 @@
-#coding:utf8
 from __future__ import print_function
 import os
 import torch
@@ -24,15 +23,12 @@ class Transformer(object):
         img_.sub_(0.5).div_(0.5)   
         return img_
 
-
 #model = Segnet(3,3)
-#model_path = './checkpoint/training_results_segnet/model/netG_final.pth'
+#model_path = './checkpoint/Segnet/model/netG_final.pth'
 model = UNet(3,3)
-model_path = './checkpoint/training_road_unet/model/netG_final.pth'
+model_path = './checkpoint/Unet/model/netG_final.pth'
 model.load_state_dict(torch.load(model_path,map_location='cpu'))
 
-
-#test_image_path = './data/train/src/0.png'
 test_image_path = 'C:/Users/1/Desktop/11.png'
 test_image = Image.open(test_image_path).convert('RGB')
 print('Operating...')
@@ -47,7 +43,3 @@ a = show((label_image +1) /2)   ##转换的时候，会自动从0-1转换成0-25
 print(a.getpixel((100,100)))
 print(a.size)
 a.show()
-
-
-# label_image_save_path = './data/train/label'
-# vutils.save_image(label_image.data.reshape(-1,3,256,256), label_image_save_path + '/0_label_image.png',normalize=True)
