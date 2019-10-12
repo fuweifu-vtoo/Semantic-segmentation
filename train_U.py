@@ -28,7 +28,7 @@ parser.add_argument('--num_workers', type=int, default=2, help='how many threads
 parser.add_argument('--size_w', type=int, default=256, help='scale image to this size')
 parser.add_argument('--size_h', type=int, default=256, help='scale image to this size')
 parser.add_argument('--flip', type=int, default=0, help='1 for flipping image randomly, 0 for not')
-parser.add_argument('--net', type=str, default='Unet', help='path to pre-trained network')
+parser.add_argument('--net', type=str, default='', help='path to pre-trained network')
 parser.add_argument('--data_path', default='./data/train', help='path to training images')
 parser.add_argument('--outf', default='./checkpoint/Unet', help='folder to output images and model checkpoints')
 parser.add_argument('--save_epoch', default=5, help='path to val images')

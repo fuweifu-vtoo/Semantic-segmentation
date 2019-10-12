@@ -3,7 +3,7 @@
 ### [这个repo适合新手入门pytorch和图像分割]()
 一个采用**Pytorch**的语义分割项目
 
-这个repo是在遥感图像语义分割项目时写的，但数据集不是我们遥感项目的数据集，而是随便download的一个遥感数据集，且还在初期。 
+这个repo是在遥感图像语义分割项目时写的，但数据集不是我们遥感项目的数据集，而是网上download的一个遥感数据集。 
 
 ![](asset/0_src.png)
 ![](asset/0.png)
@@ -55,6 +55,10 @@ python predict.py
 
 * Unet网络定义
 
+###  [utils/DataArgument.py](DataArgument.py)
+
+* 数据预处理文件，对数据切割，旋转加噪顺便做数据增强
+
 ## 数据集  
 
 ### 数据集下载
@@ -62,7 +66,7 @@ python predict.py
 
 
 ### 数据集处理
-进入vutils文件夹，使用下面语句（相对路径要提前配置好） 
+进入utils文件夹，使用下面语句（相对路径要提前配置好） 
 
 ```
 python DataArgument.py
@@ -70,6 +74,9 @@ python DataArgument.py
 
 **DataArgument.py**实现了对大图进行切割（成256 x 256），切割后旋转，加噪声等操作来生成训练数据。
 
+
+##联系我
+###代码运行过程中有任何问题，都可随时联系我（for free），也可以在issue中提问，我会尽快回答。
 
 
 
