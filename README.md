@@ -5,8 +5,11 @@
 
 这个repo是在遥感图像语义分割项目时写的，但数据集不是我们遥感项目的数据集，而是网上download的一个遥感数据集。 
 
+###[原图和label图]()
 ![](asset/0_src.png)
 ![](asset/0.png)
+###[分割结果](分割结果)
+![](asset/0_label_image.png)
 
 ## 我的环境
 
@@ -76,7 +79,7 @@ python DataArgument.py
 
 
 ##联系我
-###代码运行过程中有任何问题，都可随时联系我（for free），也可以在issue中提问，我会尽快回答。
+###代码运行过程中有任何问题，都可随时联系我（for free），可以在issue中提问，我会尽快回答。
 
 
 
