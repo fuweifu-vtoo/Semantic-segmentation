@@ -8,7 +8,7 @@ class Segnet(nn.Module):
         super(Segnet, self).__init__()
 
         # Encoder
-        self.conv11 = nn.Conv2d(input_nc, 64, kernel_size=3, padding=1)
+        self.conv11 = nn.Conv2d(input_nc, 64, kernel_size=3, padding=1)   ##[4,256,256]-->[64,256,256]
         self.bn11 = nn.BatchNorm2d(64)
         self.conv12 = nn.Conv2d(64, 64, kernel_size=3, padding=1)
         self.bn12 = nn.BatchNorm2d(64)

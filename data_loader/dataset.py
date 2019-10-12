@@ -9,7 +9,6 @@ import random
 def is_image_file(filename):  # 定义一个判断是否是图片的函数
     return any(filename.endswith(extension) for extension in [".png", ".jpg", ".jpeg"])
 
-
 def trans_to_tensor(pic):  # 定义一个转变图像格式的函数
     if isinstance(pic, np.ndarray):
         img = torch.from_numpy(pic.transpose((2, 0, 1)))  # transpose和reshape区别巨大
@@ -32,39 +31,6 @@ def trans_to_tensor(pic):  # 定义一个转变图像格式的函数
         return img.float().div(255)
     else:
         return img
-"""
-def gamma_transform(img, gamma):
-    gamma_table = [np.power(x / 255.0, gamma) * 255.0 for x in range(256)]
-    gamma_table = np.round(np.array(gamma_table)).astype(np.uint8)
-    return cv2.LUT(img, gamma_table)
-
-
-def random_gamma_transform(img, gamma_vari):
-    log_gamma_vari = np.log(gamma_vari)
-    alpha = np.random.uniform(-log_gamma_vari, log_gamma_vari)
-    gamma = np.exp(alpha)
-    return gamma_transform(img, gamma)
-
-
-def rotate(xb, yb, angle):
-    M_rotate = cv2.getRotationMatrix2D((img_w / 2, img_h / 2), angle, 1)
-    xb = cv2.warpAffine(xb, M_rotate, (img_w, img_h))
-    yb = cv2.warpAffine(yb, M_rotate, (img_w, img_h))
-    return xb, yb
-
-
-def blur(img):
-    img = cv2.blur(img, (3, 3));
-    return img
-
-
-def add_noise(img):
-    for i in range(200):  # 添加点噪声
-        temp_x = np.random.randint(0, img.shape[0])
-        temp_y = np.random.randint(0, img.shape[1])
-        img[temp_x][temp_y] = 255
-    return img
-"""
 
 def data_augment(img1, img2, flip=1, ROTATE_90=1, ROTATE_180=1, ROTATE_270=1, add_noise=1):
     n = flip + ROTATE_90 + ROTATE_180 + ROTATE_270 + add_noise
@@ -126,9 +92,3 @@ class train_dataset(data.Dataset):
     def __len__(self):
         return len(self.list)
 
-# if __name__ == '__main__':
-#     data = train_dataset(data_path='../data/train')
-#     n = len(data.list)
-#     for i in range(n):
-#         data.__getitem__(i)
-#     print(len(data.list))
