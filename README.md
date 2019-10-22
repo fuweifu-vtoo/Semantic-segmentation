@@ -79,8 +79,8 @@ python DataArgument.py
 **DataArgument.py**实现了对大图进行切割（成256 x 256），切割后旋转，加噪声等操作来生成训练数据。
 
 
-##联系我
-###代码运行过程中有任何问题，都可随时联系我（for free），可以在issue中提问，我会尽快回答。
+## 联系我
+### 代码运行过程中有任何问题，都可随时联系我（for free and u feel free to contack me please），可以在issue中提问，我也会尽快回答。
 
 
 
