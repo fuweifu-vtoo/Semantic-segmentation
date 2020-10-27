@@ -85,8 +85,7 @@ class UNet(nn.Module):
         d4_2 = torch.cat([d4_1, c2], dim=1)
         d4_ = self.relu(self.bn64(self.conv8_1(d4_2)))
         d4 = self.relu(self.bn64(self.conv8_2(d4_)))
-
-        output = self.sigmoid(self.out_conv(d4))
+        output = self.out_conv(d4)
 
         return output
 

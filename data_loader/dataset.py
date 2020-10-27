@@ -9,6 +9,7 @@ import random
 def is_image_file(filename):  # 定义一个判断是否是图片的函数
     return any(filename.endswith(extension) for extension in [".png", ".jpg", ".jpeg"])
 
+
 def trans_to_tensor(pic):  # 定义一个转变图像格式的函数
     if isinstance(pic, np.ndarray):
         img = torch.from_numpy(pic.transpose((2, 0, 1)))  # transpose和reshape区别巨大
@@ -32,6 +33,7 @@ def trans_to_tensor(pic):  # 定义一个转变图像格式的函数
     else:
         return img
 
+
 def data_augment(img1, img2, flip=1, ROTATE_90=1, ROTATE_180=1, ROTATE_270=1, add_noise=1):
     n = flip + ROTATE_90 + ROTATE_180 + ROTATE_270 + add_noise
     a = random.random()
@@ -49,6 +51,47 @@ def data_augment(img1, img2, flip=1, ROTATE_90=1, ROTATE_180=1, ROTATE_270=1, ad
         img2 = img2.transpose(Image.ROTATE_270)
     if add_noise == 1:
         pass
+
+## 2020/10/26
+import torchvision.transforms as transforms
+mean_std = ([0.485, 0.456, 0.406],
+            [0.229, 0.224, 0.225])
+# 将input变成tensor
+input_transform = transforms.Compose([
+    transforms.ToTensor(),      ##如果是numpy或者pil image格式，会将[0,255]转为[0,1]，并且(hwc)转为(chw)
+    transforms.Normalize(*mean_std)     #[0,1]  ---> 符合imagenet的范围[-2.117,2.248][,][,]
+])
+# 将label变成tensor
+def function_label(x):
+    if x > 0: return 1
+    else: return 0
+class RGBToGray(object):
+    def __call__(self, mask):
+        mask = mask.convert("L")
+        mask = mask.point(function_label)
+        return mask
+class MaskToTensor(object):
+    def __call__(self, img):
+        return torch.from_numpy(np.array(img, dtype=np.int32)).long()
+target_transform = transforms.Compose([
+    RGBToGray(),
+    MaskToTensor()
+])
+palette = [0, 0, 0, 255, 255, 255]
+zero_pad = 256 * 3 - len(palette)
+for i in range(zero_pad):
+    palette.append(0)
+def colorize_mask(mask):
+    new_mask = Image.fromarray(mask.astype(np.uint8)).convert('P')
+    new_mask.putpalette(palette)
+    return new_mask
+def fast_hist(label_pred, label_true, num_classes):
+    mask = (label_true >= 0) & (label_true < num_classes)
+    hist = np.bincount(
+        num_classes * label_true[mask].astype(int) +
+        label_pred[mask], minlength=num_classes ** 2).reshape(num_classes, num_classes)
+    return hist
+## end 2020/10/26
 
 class train_dataset(data.Dataset):
     def __init__(self, data_path='', size_w=256, size_h=256, flip=0):
@@ -82,10 +125,13 @@ class train_dataset(data.Dataset):
                     initial_image = initial_image.transpose(Image.ROTATE_90)
                     semantic_image = semantic_image.transpose(Image.ROTATE_90)
 
-        initial_image = trans_to_tensor(initial_image)
-        initial_image = initial_image.mul_(2).add_(-1)  # -1到1之间
-        semantic_image = trans_to_tensor(semantic_image)
-        semantic_image = semantic_image.mul_(2).add_(-1)
+        # initial_image = trans_to_tensor(initial_image)  # 0到1之间
+        # initial_image = initial_image.mul_(2).add_(-1)  # -1到1之间
+        # semantic_image = trans_to_tensor(semantic_image)
+        # semantic_image = semantic_image.mul_(2).add_(-1)
+
+        initial_image = input_transform(initial_image)
+        semantic_image = target_transform(semantic_image)
 
         return initial_image, semantic_image, self.list[index]
 

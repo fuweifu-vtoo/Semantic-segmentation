@@ -5,7 +5,8 @@ import os
 from PIL import Image
 import random
 
-semantic_image = Image.open('../data/train/label/0.png').point(lambda i: i * 80).convert('RGB')
+# semantic_image = Image.open('../data/train/label/0.png').point(lambda i: i * 80).convert('RGB')
+semantic_image = Image.open('../data/train/label/0.png').convert('RGB')  # (76,76,76)
 w,h = semantic_image.size
 for row in range(w):
 	for cloumn in range(h):

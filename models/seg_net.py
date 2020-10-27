@@ -126,16 +126,10 @@ class Segnet(nn.Module):
         x1d = F.max_unpool2d(x21d, id1, kernel_size=2, stride=2)
         x12d = F.relu(self.bn12d(self.conv12d(x1d)), inplace=True)    ##需要激活函数吗？
         x11d = self.conv11d(x12d)                             ##是不是少了bn层？
-        output = t.sigmoid(x11d)      ##sigmoid和softmax和全连接的区别？  #本来这应该是是一个像素分类层？
+        # output = t.sigmoid(x11d)      ##sigmoid和softmax和全连接的区别？  #本来这应该是是一个像素分类层？
 
-        return output
+        return x11d
 
-    # def load_from_segnet(self, model_path):
-    #     s_dict = self.state_dict()  # create a copy of the state dict
-    #     th = torch.load(model_path).state_dict()  # load the weigths
-    #     # for name in th:
-    #     # s_dict[corresp_name[name]] = th[name]
-    #     self.load_state_dict(th)
 
 # if __name__ == '__main__':
 #     net = Segnet(3,3)

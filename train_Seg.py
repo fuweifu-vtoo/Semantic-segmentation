@@ -8,14 +8,16 @@ import torchvision.utils as vutils
 from torch.autograd import Variable
 import time
 from numpy import *
-from data_loader.dataset import train_dataset
+from data_loader.dataset import train_dataset, colorize_mask, fast_hist
 from models.u_net import UNet
 from models.seg_net import Segnet
+from PIL import Image
+import numpy as np
 
 parser = argparse.ArgumentParser(description='Training a Segnet model')
 parser.add_argument('--batch_size', type=int, default=4, help='equivalent to instance normalization with batch_size=1')
 parser.add_argument('--input_nc', type=int, default=3)
-parser.add_argument('--output_nc', type=int, default=3)
+parser.add_argument('--output_nc', type=int, default=2, help='equivalent to numclass')
 parser.add_argument('--niter', type=int, default=10, help='number of epochs to train for')
 parser.add_argument('--lr', type=float, default=0.0001, help='learning rate, default=0.0002')
 parser.add_argument('--beta1', type=float, default=0.5, help='beta1 for adam. default=0.5')
@@ -28,7 +30,7 @@ parser.add_argument('--flip', type=int, default=0, help='1 for flipping image ra
 parser.add_argument('--net', type=str, default='', help='path to pre-trained network')
 parser.add_argument('--data_path', default='./data/train', help='path to training images')
 parser.add_argument('--outf', default='./checkpoint/Segnet', help='folder to output images and model checkpoints')
-parser.add_argument('--save_epoch', default=5, help='path to val images')
+parser.add_argument('--save_epoch', default=1, help='path to save model')
 parser.add_argument('--test_step', default=300, help='path to val images')
 parser.add_argument('--log_step', default=1, help='path to val images')
 parser.add_argument('--num_GPU', default=1, help='number of GPU')
@@ -74,7 +76,8 @@ if opt.num_GPU > 1:
 
 
 ###########   LOSS & OPTIMIZER   ##########
-criterion = nn.BCELoss()        
+# criterion = nn.BCELoss()
+criterion = nn.CrossEntropyLoss(reduction='mean', ignore_index=255)
 optimizer = torch.optim.Adam(net.parameters(), lr=opt.lr, betas=(opt.beta1, 0.999))
 ###########   GLOBAL VARIABLES   ###########
 initial_image = torch.FloatTensor(opt.batch_size, opt.input_nc, opt.size_w, opt.size_h)
@@ -85,12 +88,14 @@ semantic_image = Variable(semantic_image)
 if opt.cuda:
     initial_image = initial_image.cuda()
     semantic_image = semantic_image.cuda()
+    criterion = criterion.cuda()
 
 if __name__ == '__main__':
     
     log = open('./checkpoint/Segnet/train_Segnet_log.txt', 'w')
     start = time.time()
     net.train()
+    hist = np.zeros((opt.output_nc, opt.output_nc))
     for epoch in range(1, opt.niter+1):
         loader = iter(train_loader)
         for i in range(0, train_datatset_.__len__(), opt.batch_size):
@@ -102,19 +107,39 @@ if __name__ == '__main__':
             # semantic_image = semantic_image.view(-1)
 
             ### loss ###
-            loss = criterion(semantic_image_pred, semantic_image)
+            # from IPython import embed;embed()
+            assert semantic_image_pred.size()[2:] == semantic_image.size()[1:]
+            loss = criterion(semantic_image_pred, semantic_image.long())
+
             optimizer.zero_grad()
             loss.backward()
             optimizer.step()
 
+            ### evaluate ###
+            predictions = semantic_image_pred.data.max(1)[1].squeeze(1).squeeze(0).cpu().numpy()
+            gts = semantic_image.data[:].squeeze_(0).cpu().numpy()
+            hist += fast_hist(label_pred=predictions.flatten(), label_true=gts.flatten(),
+                              num_classes=opt.output_nc)
+            train_acc = np.diag(hist).sum() / hist.sum()
+
             ########### Logging ##########
             if i % opt.log_step == 0:
-                print('[%d/%d][%d/%d] Loss: %.4f' %
-                      (epoch, opt.niter, i, len(train_loader) * opt.batch_size, loss.item()))
-                log.write('[%d/%d][%d/%d] Loss: %.4f' %
-                          (epoch, opt.niter, i, len(train_loader) * opt.batch_size, loss.item()))
+                print('[%d/%d][%d/%d] Loss: %.4f TrainAcc: %.4f' %
+                      (epoch, opt.niter, i, len(train_loader) * opt.batch_size, loss.item(), train_acc))
+                log.write('[%d/%d][%d/%d] Loss: %.4f TrainAcc: %.4f' %
+                          (epoch, opt.niter, i, len(train_loader) * opt.batch_size, loss.item(), train_acc))
             if i % opt.test_step == 0:
-               vutils.save_image(semantic_image_pred.data.reshape(-1,3,256,256), opt.outf + '/fake_samples_epoch_%03d_%03d.png' % (epoch, i),normalize=True) #normalize=True很关键，因为semantic_image_pred的范围是-1，1
+                gt = semantic_image[0].cpu().numpy().astype(np.uint8)
+                gt_color = colorize_mask(gt)
+                predictions = semantic_image_pred.data.max(1)[1].squeeze_(1).cpu().numpy()
+                prediction = predictions[0]
+                predictions_color = colorize_mask(prediction)
+                width, height = opt.size_w, opt.size_h
+                save_image = Image.new('RGB', (width * 2, height))
+                save_image.paste(gt_color, box=(0 * width, 0 * height))
+                save_image.paste(predictions_color, box=(1 * width, 0 * height))
+                save_image.save(opt.outf + '/epoch_%03d_%03d_gt_pred.png' % (epoch, i))
+
         if epoch % opt.save_epoch == 0:
             torch.save(net.state_dict(), '%s/model/netG_%s.pth' % (opt.outf, str(epoch)))
 
