@@ -26,17 +26,17 @@
 - 打开终端，输入  
 ```
 python train_Seg.py
-```  
+```
 - 调用Segnet
 - 或者  
 ```
 python train_U.py
-```  
+```
 - 调用Unet
 - 或者  
 ```
 python predict.py
-```  
+```
 - 进行推断inference（需要有已经训练好的模型才可以推断）
 
 ## 包含文件
@@ -74,13 +74,13 @@ python predict.py
 
 ```
 python DataArgument.py
-```  
+```
 
 **DataArgument.py**实现了对大图进行切割（成256 x 256），切割后旋转，加噪声等操作来生成训练数据。
 
 ### 已处理好的数据集下载
-[百度网盘](https://pan.baidu.com/s/1RPcAdiqRCNSbfRUJNABmBw)
-提取码：rjzy   
+[百度网盘](https://pan.baidu.com/s/1540_oghPEZKArQRl0VAsnA)
+提取码：5b1v   
 下载后解压至 ./data/train/label  和 ./data/train/src
 
 ## 联系我
